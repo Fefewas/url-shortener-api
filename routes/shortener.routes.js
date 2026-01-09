@@ -9,6 +9,5 @@ const {
 
 router.post("/shorten", createShortUrl);
 router.get("/:shortCode", redirectToOriginal);
-router.get("/get-all-urls", getAllUrls);
 
 module.exports = router;

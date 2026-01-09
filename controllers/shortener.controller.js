@@ -3,7 +3,9 @@ const { encodeBase62, decodeBase62 } = require("../utils/base62");
 
 const createShortUrl = (req, res) => {
   try {
-    const originalUrl = req.body.url;
+    console.log("BODY:", req.body);
+
+    const { originalUrl } = req.body;
 
     if (!originalUrl) {
       return res.status(400).json({ error: "NO URL" });
@@ -13,15 +15,19 @@ const createShortUrl = (req, res) => {
       .prepare("INSERT INTO urls (original_url) VALUES (?)")
       .run(originalUrl);
 
-    const id = result.lastInsertRow.id;
+    const id = result.lastInsertRowid;
     const shortCode = encodeBase62(id);
 
-    res.status(200).json({
+    console.log("ID:", id);
+    console.log("SHORT CODE:", shortCode);
+
+    res.status(201).json({
       originalUrl,
-      shortUtl: `http://localhost:3000/${shortCode}`,
+      shortUrl: `http://localhost:3000/api/${shortCode}`,
     });
   } catch (err) {
     console.error(err);
+    res.status(500).json({ error: "INTERNAL SERVER ERROR" });
   }
 };
 
@@ -35,20 +41,10 @@ const redirectToOriginal = (req, res) => {
     return res.status(404).json({ error: "NO URL" });
   }
 
-  res.redirect(url.originalUrl);
-};
-
-const getAllUrls = (req, res) => {
-  try {
-    const query = Database.prepare("SELECT * FROM shortenedUrls ORDER BY key");
-    res.status(200).json(query.value);
-  } catch (err) {
-    console.errror(err);
-  }
+  res.redirect(url.original_url);
 };
 
 module.exports = {
   createShortUrl,
   redirectToOriginal,
-  getAllUrls,
 };
